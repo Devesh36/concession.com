@@ -34,21 +34,61 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  password      String
-  college       String
-  role          Role      @default(STUDENT)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-}
-
-enum Role {
+enum UserRole {
   STUDENT
   COLLEGE_STAFF
   RAILWAY_STAFF
+}
+
+enum RequestStatus {
+  PENDING
+  COLLEGE_APPROVED
+  COLLEGE_REJECTED
+  RAILWAY_APPROVED
+  RAILWAY_REJECTED
+  COMPLETED
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  name               String
+  email              String              @unique
+  password           String
+  collegeName        String
+  role               UserRole     @default(STUDENT)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  accounts           Account[]
+  sessions           Session[]
+  concessionRequests ConcessionRequest[]
+  studentRequests    ConcessionRequest[] @relation("studentRequests")
+  collegeApprovals   ConcessionRequest[] @relation("collegeApprovals")
+  railwayApprovals   ConcessionRequest[] @relation("railwayApprovals")
+}
+
+model ConcessionRequest {
+  id                 String       @id @default(cuid())
+  userId             String
+  from               String
+  to                 String
+  period             Int
+  class              String
+  studentId          String
+  dateOfBirth        DateTime
+  residentialAddress String
+  status             RequestStatus @default(PENDING)
+  collegeStaffId     String?
+  railwayStaffId     String?
+  collegeApprovalDate DateTime?
+  railwayApprovalDate DateTime?
+  digitalStamp       String?      // URL or identifier for the digital stamp
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  user              User         @relation("studentRequests", fields: [userId], references: [id])
+  collegeStaff      User?        @relation("collegeApprovals", fields: [collegeStaffId], references: [id])
+  railwayStaff      User?        @relation("railwayApprovals", fields: [railwayStaffId], references: [id])
+
+  @@index([userId])
+  @@index([collegeStaffId])
+  @@index([railwayStaffId])
 }

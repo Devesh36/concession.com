@@ -1,36 +1,61 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { RetroGrid } from "@/components/magicui/retro-grid";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import Link from "next/link";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  college: z.string().min(2, "Please enter your college name"),
+  collegeName: z.string().min(2, "College name must be at least 2 characters"),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   });
 
   const onSubmit = async (data: RegisterForm) => {
+    setLoading(true);
+    setError("");
+
     try {
-      // We'll implement this later with API
-      console.log(data);
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Registration failed");
+      }
+
+      // Redirect to login page on success
+      router.push("/login?registered=true");
     } catch (error) {
-      console.error(error);
+      setError(error instanceof Error ? error.message : "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,76 +74,84 @@ export default function RegisterPage() {
           <h2 className="text-2xl font-bold text-amber-900 text-center mb-6">
             Create Account
           </h2>
+
+          {error && (
+            <div className="mb-6 p-4 text-sm text-red-800 bg-red-50 rounded-lg">
+              {error}
+            </div>
+          )}
           
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
-              <label className="block text-amber-700 mb-2" htmlFor="name">
+              <label className="block text-sm font-medium text-amber-700 mb-2" htmlFor="name">
                 Full Name
               </label>
               <input
                 {...register("name")}
-                className="w-full px-4 py-2 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                type="text"
+                className="w-full px-4 py-3 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               {errors.name && (
-                <p className="mt-1 text-red-500 text-sm">{errors.name.message}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.name.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-amber-700 mb-2" htmlFor="email">
+              <label className="block text-sm font-medium text-amber-700 mb-2" htmlFor="email">
                 Email
               </label>
               <input
                 {...register("email")}
                 type="email"
-                className="w-full px-4 py-2 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-4 py-3 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               {errors.email && (
-                <p className="mt-1 text-red-500 text-sm">{errors.email.message}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
             
             <div>
-              <label className="block text-amber-700 mb-2" htmlFor="password">
+              <label className="block text-sm font-medium text-amber-700 mb-2" htmlFor="password">
                 Password
               </label>
               <input
                 {...register("password")}
                 type="password"
-                className="w-full px-4 py-2 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-4 py-3 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               {errors.password && (
-                <p className="mt-1 text-red-500 text-sm">{errors.password.message}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-amber-700 mb-2" htmlFor="college">
+              <label className="block text-sm font-medium text-amber-700 mb-2" htmlFor="collegeName">
                 College Name
               </label>
               <input
-                {...register("college")}
-                className="w-full px-4 py-2 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                {...register("collegeName")}
+                type="text"
+                className="w-full px-4 py-3 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
-              {errors.college && (
-                <p className="mt-1 text-red-500 text-sm">{errors.college.message}</p>
+              {errors.collegeName && (
+                <p className="mt-2 text-sm text-red-600">{errors.collegeName.message}</p>
               )}
             </div>
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-500 transition-colors disabled:opacity-50"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Registering..." : "Register"}
+              {loading ? "Creating Account..." : "Register"}
             </button>
           </form>
 
-          <p className="mt-4 text-center text-amber-700">
+          <p className="mt-8 text-center text-sm text-amber-700">
             Already have an account?{" "}
-            <Link 
-              href="/login" 
-              className="text-amber-600 hover:text-amber-800 font-medium"
+            <Link
+              href="/login"
+              className="font-semibold text-amber-600 hover:text-amber-800"
             >
               Sign In
             </Link>

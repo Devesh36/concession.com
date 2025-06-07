@@ -1,6 +1,3 @@
--- CreateEnum
-CREATE TYPE "Role" AS ENUM ('STUDENT', 'COLLEGE_STAFF', 'RAILWAY_STAFF');
-
 -- CreateTable
 CREATE TABLE "Account" (
     "id" TEXT NOT NULL,
@@ -35,12 +32,30 @@ CREATE TABLE "User" (
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "college" TEXT NOT NULL,
-    "role" "Role" NOT NULL DEFAULT 'STUDENT',
+    "collegeName" TEXT NOT NULL,
+    "role" TEXT NOT NULL DEFAULT 'STUDENT',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ConcessionRequest" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "from" TEXT NOT NULL,
+    "to" TEXT NOT NULL,
+    "period" INTEGER NOT NULL,
+    "class" TEXT NOT NULL,
+    "studentId" TEXT NOT NULL,
+    "dateOfBirth" TIMESTAMP(3) NOT NULL,
+    "residentialAddress" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ConcessionRequest_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -52,8 +67,14 @@ CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
+-- CreateIndex
+CREATE INDEX "ConcessionRequest_userId_idx" ON "ConcessionRequest"("userId");
+
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ConcessionRequest" ADD CONSTRAINT "ConcessionRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
