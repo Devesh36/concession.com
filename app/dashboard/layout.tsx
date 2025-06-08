@@ -34,8 +34,9 @@ export default async function DashboardLayout({
   const correctPath = roleDashboards[session.user.role];
 
   try {
-    const headersList = headers();
-    const currentPath = headersList.get("next-url") || ""; // Using next-url instead of x-invoke-path
+    // Make headers() call async
+    const headersList = await headers();
+    const currentPath = await headersList.get("next-url") || "";
 
     // Only redirect if we're not already on the correct path
     if (currentPath && !currentPath.startsWith(correctPath)) {

@@ -50,25 +50,26 @@ enum RequestStatus {
 }
 
 model User {
-  id                 String              @id @default(cuid())
-  name               String
-  email              String              @unique
-  password           String
-  collegeName        String
-  role               UserRole     @default(STUDENT)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  accounts           Account[]
-  sessions           Session[]
-  concessionRequests ConcessionRequest[]
-  studentRequests    ConcessionRequest[] @relation("studentRequests")
-  collegeApprovals   ConcessionRequest[] @relation("collegeApprovals")
-  railwayApprovals   ConcessionRequest[] @relation("railwayApprovals")
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  password    String
+  collegeName String
+  role        UserRole  @default(STUDENT)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  accounts    Account[]
+  sessions    Session[]
+
+  // Relations for different roles
+  studentRequests  ConcessionRequest[] @relation("studentRequests")
+  collegeApprovals ConcessionRequest[] @relation("collegeApprovals")
+  railwayApprovals ConcessionRequest[] @relation("railwayApprovals")
 }
 
 model ConcessionRequest {
-  id                 String       @id @default(cuid())
-  userId             String
+  id                 String        @id @default(cuid())
+  userId             String // Foreign key for student
   from               String
   to                 String
   period             Int
@@ -76,17 +77,22 @@ model ConcessionRequest {
   studentId          String
   dateOfBirth        DateTime
   residentialAddress String
+  aadharNumber       String
+  collegeIdNumber    String
   status             RequestStatus @default(PENDING)
-  collegeStaffId     String?
-  railwayStaffId     String?
-  collegeApprovalDate DateTime?
-  railwayApprovalDate DateTime?
-  digitalStamp       String?      // URL or identifier for the digital stamp
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  user              User         @relation("studentRequests", fields: [userId], references: [id])
-  collegeStaff      User?        @relation("collegeApprovals", fields: [collegeStaffId], references: [id])
-  railwayStaff      User?        @relation("railwayApprovals", fields: [railwayStaffId], references: [id])
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  // Relations
+  student User @relation("studentRequests", fields: [userId], references: [id])
+
+  // Add college staff relation
+  collegeStaffId String?
+  collegeStaff   User?   @relation("collegeApprovals", fields: [collegeStaffId], references: [id])
+
+  // Add railway staff relation
+  railwayStaffId String?
+  railwayStaff   User?   @relation("railwayApprovals", fields: [railwayStaffId], references: [id])
 
   @@index([userId])
   @@index([collegeStaffId])
