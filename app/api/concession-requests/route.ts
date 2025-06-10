@@ -2,44 +2,47 @@ import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { UserRole } from "@prisma/client";
 
 export async function POST(req: Request) {
   try {
     // 1. Get and validate session
     const session = await getServerSession(authOptions);
+    console.log("Current session:", session); // Debug log
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. Get and validate request body
+    // 2. Verify user exists and has STUDENT role
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    });
+
+    console.log("Found user:", user); // Debug log
+
+    if (!user || user.role !== "STUDENT") {
+      console.error(`User role check failed - Role: ${user?.role}`);
+      return NextResponse.json({ 
+        error: "Only students can create concession requests" 
+      }, { status: 403 });
+    }
+
+    // 3. Get and validate request body
     const body = await req.json();
     console.log("Request body:", body);
 
-    // Validate and format date
-    let dateOfBirth;
-    try {
-      dateOfBirth = new Date(body.dateOfBirth);
-      if (isNaN(dateOfBirth.getTime())) {
-        throw new Error("Invalid date");
-      }
-    } catch (error) {
-      return NextResponse.json(
-        { error: "Invalid date of birth format" },
-        { status: 400 }
-      );
-    }
-
-    // 3. Create the concession request
+    // 4. Create the concession request
     try {
       const concessionRequest = await prisma.concessionRequest.create({
         data: {
-          userId: session.user.id, // Direct userId assignment
+          userId: user.id, // Direct userId assignment
           from: body.from,
           to: body.to,
           period: Number(body.period),
           class: body.class,
           studentId: body.studentId,
-          dateOfBirth: dateOfBirth,
+          dateOfBirth: new Date(body.dateOfBirth),
           residentialAddress: body.residentialAddress,
           aadharNumber: body.aadharNumber,
           collegeIdNumber: body.collegeIdNumber,
@@ -47,23 +50,25 @@ export async function POST(req: Request) {
         }
       });
 
-      return NextResponse.json(concessionRequest);
+      return NextResponse.json({
+        message: "Concession request created successfully",
+        data: concessionRequest
+      });
+
     } catch (dbError) {
       console.error("Database error:", dbError);
-      return NextResponse.json(
-        { 
-          error: "Database error", 
-          details: dbError instanceof Error ? dbError.message : "Unknown error" 
-        }, 
-        { status: 500 }
-      );
+      return NextResponse.json({ 
+        error: "Failed to create request in database",
+        details: dbError instanceof Error ? dbError.message : "Unknown database error"
+      }, { status: 500 });
     }
+
   } catch (error) {
     console.error("API error:", error);
-    return NextResponse.json(
-      { error: "Failed to process request" },
-      { status: 500 }
-    );
+    return NextResponse.json({ 
+      error: "Failed to process request",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 });
   }
 }
 
@@ -81,7 +86,9 @@ export async function GET(req: Request) {
 
     const where = {
       userId: session.user.id,
-      ...(status && status !== "all" ? { status } : {}),
+      ...(status && status !== "all"
+        ? { status: status as any } // Replace 'any' with 'RequestStatus' if imported
+        : {}),
     };
 
     const [requests, total] = await Promise.all([

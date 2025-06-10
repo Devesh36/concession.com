@@ -46,30 +46,26 @@ enum RequestStatus {
   COLLEGE_REJECTED
   RAILWAY_APPROVED
   RAILWAY_REJECTED
-  COMPLETED
 }
 
 model User {
-  id          String    @id @default(cuid())
-  name        String
-  email       String    @unique
-  password    String
-  collegeName String
-  role        UserRole  @default(STUDENT)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  accounts    Account[]
-  sessions    Session[]
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  password        String
+  role            UserRole  @default(STUDENT)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  accounts        Account[]
+  sessions        Session[]
 
-  // Relations for different roles
+  // Relations
   studentRequests  ConcessionRequest[] @relation("studentRequests")
-  collegeApprovals ConcessionRequest[] @relation("collegeApprovals")
-  railwayApprovals ConcessionRequest[] @relation("railwayApprovals")
 }
 
 model ConcessionRequest {
   id                 String        @id @default(cuid())
-  userId             String // Foreign key for student
+  userId             String
   from               String
   to                 String
   period             Int
@@ -84,17 +80,7 @@ model ConcessionRequest {
   updatedAt          DateTime      @updatedAt
 
   // Relations
-  student User @relation("studentRequests", fields: [userId], references: [id])
-
-  // Add college staff relation
-  collegeStaffId String?
-  collegeStaff   User?   @relation("collegeApprovals", fields: [collegeStaffId], references: [id])
-
-  // Add railway staff relation
-  railwayStaffId String?
-  railwayStaff   User?   @relation("railwayApprovals", fields: [railwayStaffId], references: [id])
-
+  student            User          @relation("studentRequests", fields: [userId], references: [id])
+  
   @@index([userId])
-  @@index([collegeStaffId])
-  @@index([railwayStaffId])
 }

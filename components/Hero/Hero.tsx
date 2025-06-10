@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { RetroGrid } from "@/components/magicui/retro-grid";
+import { RetroGrid } from "@/components/magicui/retro-grid";;
 import Link from 'next/link';
 
 const cards = [
