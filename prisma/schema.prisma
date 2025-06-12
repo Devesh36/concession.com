@@ -49,18 +49,17 @@ enum RequestStatus {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  name            String
-  email           String    @unique
-  password        String
-  role            UserRole  @default(STUDENT)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  accounts        Account[]
-  sessions        Session[]
-
-  // Relations
-  studentRequests  ConcessionRequest[] @relation("studentRequests")
+  id            String     @id @default(cuid())
+  name          String
+  email         String     @unique
+  password      String
+  collegeName   String     // Add this field
+  role          String     @default("STUDENT")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  studentRequests ConcessionRequest[] @relation("studentRequests")
 }
 
 model ConcessionRequest {
@@ -84,3 +83,4 @@ model ConcessionRequest {
   
   @@index([userId])
 }
+

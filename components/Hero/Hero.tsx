@@ -1,9 +1,12 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { RetroGrid } from "@/components/magicui/retro-grid";;
 import Link from 'next/link';
+import { UserRole } from "@prisma/client";
+import { Menu, Transition } from '@headlessui/react';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 const cards = [
     {
@@ -34,9 +37,14 @@ const cards = [
 
 
 function Hero() {
+  const [selectedRole, setSelectedRole] = useState('STUDENT');
+
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-amber-50 to-amber-100">
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        {/* Replace multiple login buttons with dropdown */}
+       
+
         {/* Hero Content */}
         <motion.div 
           className="text-center mb-24"

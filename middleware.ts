@@ -3,48 +3,42 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req) {
-    // Get pathname from request
-    const path = req.nextUrl.pathname;
-    
-    // Check if the user is authenticated
-    const isAuthenticated = !!req.nextauth.token;
-    
-    // Define public paths that don't require authentication
-    const publicPaths = ["/", "/login", "/register"];
-    
-    // Check if current path is public
-    const isPublicPath = publicPaths.includes(path);
+    const token = req.nextauth.token;
+    const isAuth = !!token;
+    const isAuthPage = req.nextUrl.pathname.startsWith('/login') || 
+                      req.nextUrl.pathname.startsWith('/register');
 
-    // Handle authentication redirects
-    if (!isAuthenticated && !isPublicPath) {
-      return NextResponse.redirect(new URL("/login", req.url));
+    if (isAuthPage) {
+      if (isAuth) {
+        const role = token.role as string;
+        const dashboardPath = {
+          STUDENT: "/dashboard/student",
+          COLLEGE_STAFF: "/dashboard/college",
+          RAILWAY_STAFF: "/dashboard/railway",
+        }[role] || "/dashboard/student";
+
+        return NextResponse.redirect(new URL(dashboardPath, req.url));
+      }
+      return null;
     }
 
-    // Redirect authenticated users away from login/register pages
-    if (isAuthenticated && isPublicPath && path !== "/") {
-      return NextResponse.redirect(new URL("/dashboard/student", req.url));
+    if (!isAuth) {
+      return NextResponse.redirect(new URL('/login', req.url));
     }
 
     return NextResponse.next();
   },
   {
     callbacks: {
-      authorized: () => true, // This lets the middleware function handle the logic
+      authorized: ({ token }) => !!token,
     },
   }
 );
 
 export const config = {
-  // Specify which paths the middleware should run on
   matcher: [
-    /*
-     * Match all paths except:
-     * 1. /api routes
-     * 2. /_next (Next.js internals)
-     * 3. /fonts (inside public directory)
-     * 4. /examples (inside public directory)
-     * 5. all files inside public (e.g. favicon.ico)
-     */
-    "/((?!api|_next|fonts|examples|[\\w-]+\\.\\w+).*)",
-  ],
+    '/dashboard/:path*',
+    '/login',
+    '/register',
+  ]
 };

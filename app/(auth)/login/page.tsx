@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { RetroGrid } from "@/components/magicui/retro-grid";
+import Link from "next/link";
 
 // Login form schema
 const loginSchema = z.object({
@@ -20,6 +21,8 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const role = searchParams.get("role") || "STUDENT";
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,6 +34,12 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
+  const roleDisplayNames = {
+    STUDENT: "Student",
+    COLLEGE_STAFF: "College Staff",
+    RAILWAY_STAFF: "Railway Staff",
+  };
+
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     setError("");
@@ -40,22 +49,31 @@ export default function LoginPage() {
         redirect: false,
         email: data.email,
         password: data.password,
+        role: role, // Pass the role to the credentials provider
       });
 
-      if (result?.error) {
+      if (result?.ok) {
         setError("Invalid email or password");
         return;
       }
 
+      // Redirect based on role
+      const dashboardPaths = {
+        STUDENT: "/dashboard/student",
+        COLLEGE_STAFF: "/dashboard/college",
+        RAILWAY_STAFF: "/dashboard/railway",
+      };
+
       // Show loading state before redirect
-      await router.push("/dashboard/student");
-      router.refresh();
-    } catch (error) {
-      setError("An error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      const dashboardPath = dashboardPaths[role as keyof typeof dashboardPaths];
+    router.push(dashboardPath);
+  } catch (error) {
+    console.error("Login error:", error);
+    setError("An error occurred during login");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-amber-100">
@@ -69,9 +87,12 @@ export default function LoginPage() {
         transition={{ duration: 0.4 }}
         className="relative z-10 w-full max-w-md p-8 mx-4 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-amber-100"
       >
-        <h2 className="text-3xl font-bold text-amber-900 text-center mb-8">
-          Welcome Back
+        <h2 className="text-3xl font-bold text-amber-900 text-center mb-2">
+          {roleDisplayNames[role as keyof typeof roleDisplayNames]} Login
         </h2>
+        <p className="text-center text-amber-600 mb-8">
+          Sign in to access your account
+        </p>
         
         {error && (
           <div className="mb-6 p-4 text-sm text-red-800 bg-red-50 rounded-lg">

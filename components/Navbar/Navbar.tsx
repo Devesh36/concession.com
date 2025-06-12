@@ -18,12 +18,24 @@ function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/apply" className="text-amber-700 hover:text-amber-900 px-3 py-2 rounded-md text-sm font-medium">
-              Apply
+          <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/login?role=STUDENT"
+              className="group relative inline-flex items-center justify-center px-6 py-2.5 rounded-lg text-sm font-medium text-amber-600 border border-amber-600 transition-all duration-200 ease-in-out hover:bg-amber-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 active:scale-95"
+            >
+              <span className="relative">Student Login</span>
             </Link>
-            <Link href="/contact" className="text-amber-700 hover:text-amber-900 px-3 py-2 rounded-md text-sm font-medium">
-              Contact
+            <Link
+              href="/login?role=COLLEGE_STAFF"
+              className="group relative inline-flex items-center justify-center px-6 py-2.5 rounded-lg text-sm font-medium text-amber-600 border border-amber-600 transition-all duration-200 ease-in-out hover:bg-amber-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 active:scale-95"
+            >
+              <span className="relative">College Staff</span>
+            </Link>
+            <Link
+              href="/login?role=RAILWAY_STAFF"
+              className="group relative inline-flex items-center justify-center px-6 py-2.5 rounded-lg text-sm font-medium text-amber-600 border border-amber-600 transition-all duration-200 ease-in-out hover:bg-amber-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 active:scale-95"
+            >
+              <span className="relative">Railway Staff</span>
             </Link>
           </div>
 
@@ -51,12 +63,24 @@ function Navbar() {
       {/* Mobile Navigation */}
       {isOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-amber-50">
-            <Link href="/apply" className="text-amber-700 hover:text-amber-900 block px-3 py-2 rounded-md text-base font-medium">
-              Apply
+          <div className="p-4 space-y-3 bg-amber-50">
+            <Link
+              href="/login?role=STUDENT"
+              className="block w-full px-6 py-3 text-center rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-sm font-medium text-white shadow-lg hover:from-amber-600 hover:to-amber-700 transition-all duration-200 ease-in-out hover:shadow-amber-500/25 active:scale-95"
+            >
+              Student Login
             </Link>
-            <Link href="/contact" className="text-amber-700 hover:text-amber-900 block px-3 py-2 rounded-md text-base font-medium">
-              Contact
+            <Link
+              href="/login?role=COLLEGE_STAFF"
+              className="block w-full px-6 py-3 text-center rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 text-sm font-medium text-white shadow-lg hover:from-amber-700 hover:to-amber-800 transition-all duration-200 ease-in-out hover:shadow-amber-600/25 active:scale-95"
+            >
+              College Staff Login
+            </Link>
+            <Link
+              href="/login?role=RAILWAY_STAFF"
+              className="block w-full px-6 py-3 text-center rounded-lg bg-gradient-to-r from-amber-700 to-amber-800 text-sm font-medium text-white shadow-lg hover:from-amber-800 hover:to-amber-900 transition-all duration-200 ease-in-out hover:shadow-amber-700/25 active:scale-95"
+            >
+              Railway Staff Login
             </Link>
           </div>
         </div>
